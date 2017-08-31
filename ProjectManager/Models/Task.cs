@@ -1,5 +1,6 @@
 ﻿namespace ProjectManager.Models
 {
+    using Newtonsoft.Json;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
@@ -15,6 +16,7 @@
 
         public int ProjectId { get; set; }
 
+        [JsonIgnore]
         public virtual Project Project { get; set; }
 
         //public TaskSerializable ToSerializable()

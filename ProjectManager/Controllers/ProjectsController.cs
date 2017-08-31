@@ -7,53 +7,50 @@ using Newtonsoft.Json;
 
 namespace ProjectManager.Controllers
 {
-  
-        public class ProjectsController : Controller
+
+    public class ProjectsController : Controller
+    {
+        private ProjectManagerContext db = new ProjectManagerContext();
+
+        [HttpPost]
+        public JsonResult GetProjects(int[] data)
         {
-            private ProjectManagerContext db = new ProjectManagerContext();
+            int userId = data[0];
+            var currentUserProjects = db.Projects.Where(u => u.UserId == userId).ToList();
+            List<string> projects = new List<string>();
 
-            [HttpPost]
-            public JsonResult GetProjects(int[] data)
+            foreach (var project in currentUserProjects)
             {
-                int userId = data[0];
-                var currentUserProjects = db.Projects.Where(u => u.UserId == userId).ToList();
-                List<string> projects = new List<string>();
-
-                foreach (var project in currentUserProjects)
+                var serializeSettings = new JsonSerializerSettings()
                 {
-                    //var serializableProject = project.ToSerializable();
-                    var tasks = db.Tasks.Where(task => task.ProjectId == project.Id).ToList();
+                    ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+                };
 
-                    foreach (var task in tasks)
-                    {
-                        //var serializableTask = task.ToSerializable();
-                        //serializableProject.Tasks.Add(serializableTask);
-                    }
-                var p = JsonConvert.SerializeObject(project);
-                    //projects.Add(JsonConvert.SerializeObject(serializableProject));
-                }
-
-                return Json(projects);
+                var projectSerialized = JsonConvert.SerializeObject(project, Formatting.Indented, serializeSettings);
+                projects.Add(projectSerialized);
             }
 
-            //[HttpPost]
-            //public JsonResult AddProject(object[] data)
-            //{
-            //    string projectName = data[0].ToString();
-            //    int userId = Convert.ToInt32(data[1]);
-            //    var project = new Models.Project { Name = projectName, UserId = userId };
-            //    db.Projects.Add(project);
+            return Json(projects);
+        }
 
-            //    try
-            //    {
-            //        db.SaveChanges();
-            //    }
-            //    catch (DbUpdateException ex)
-            //    {
-            //        //TODO 
-            //    }
-            //    return Json(project.ToSerializable());
-            //}
-        
+        //[HttpPost]
+        //public JsonResult AddProject(object[] data)
+        //{
+        //    string projectName = data[0].ToString();
+        //    int userId = Convert.ToInt32(data[1]);
+        //    var project = new Models.Project { Name = projectName, UserId = userId };
+        //    db.Projects.Add(project);
+
+        //    try
+        //    {
+        //        db.SaveChanges();
+        //    }
+        //    catch (DbUpdateException ex)
+        //    {
+        //        //TODO 
+        //    }
+        //    return Json(project.ToSerializable());
+        //}
+
     }
 }
