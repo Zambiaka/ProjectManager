@@ -15,8 +15,43 @@
     <title>Project Manager</title>
 </head>
 <body>
-    <div> 
-    </div>
+    <div id="projects"></div>
+    <button id="addProject">Add</button>
+
+    <template id="projectTemplate">
+        <div class="row project">
+            <div class="col col-xs-1 projectIcon"><img src="~/Content/images/project_icon.png" /></div>
+            <div class="col col-xs-9 projectName"></div>
+            <div class="col col-xs-2">
+                <div class="btn-group">
+                    <button class="editProjectBtn"><img src="~/Content/images/edit_project.png" /></button>
+                    <button class="separator projectBtnSeparator"></button>
+                    <button class="deleteProjectBtn"><img src="~/Content/images/delete_project.png" /></button>
+                </div>
+            </div>
+        </div>
+        <div class="row addTask">
+            <div class="col col-xs-1"><img src="~/Content/images/add_task.png" /></div>
+            <div class="col col-xs-9 "><input placeholder="Start typing here to create a task..." /></div>
+            <div class="col col-xs-2">
+                <button class="addTaskBtn"><span>Add task</span></button>
+            </div>
+        </div>
+    </template>
+
+    <template id="taskTemplate">
+        <li class="row task">
+            <div class="col col-xs-1"><button class="select"><img src="~/Content/images/select_task.png" /></button></div>
+            <div class="col col-xs-9 "><span class="taskName">Task Task Task</span></div>
+            <div class="col col-xs-2 btn-group">
+                <button><img src="~/Content/images/edit_task.png" /></button>
+                <button class="separator taskBtnSeparator"></button>
+                <button><img src="~/Content/images/delete_task.png" /></button>
+                <button class="separator taskBtnSeparator"></button>
+                <button><img src="~/Content/images/delete_task.png" /></button>
+            </div>
+        </li>
+    </template>
 </body>
 </html>
 
