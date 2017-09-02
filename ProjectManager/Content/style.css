@@ -1,8 +1,8 @@
 ﻿body {
     overflow: auto;
     background-image: url("images/background.png");
-    background-repeat: repeat-y;
     background-size: 100%;
+    background-attachment: fixed 
 }
 
 button {

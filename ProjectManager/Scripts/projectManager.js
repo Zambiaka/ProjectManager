@@ -1,7 +1,7 @@
 ﻿document.addEventListener('DOMContentLoaded', function (event) {
     console.log('DOMContentLoaded');
     renderer.projectSection = document.getElementById('projectsSection');
-    ajaxController.getInitalizeData().then(saveData).then(renderer.renderProjectCollection);
+    ajaxController.getInitalizeData().then(saveData).then(renderer.renderData);
 });
 
 
@@ -63,11 +63,18 @@ let renderer = (function () {
         return template.content;
     }
 
+    function renderTasksInProject(project) {
+        for (let i = 0; i < project.Tasks.length; i++) {
+            renderer.renderTask(project, project.Tasks[i]);
+        }
+    }
+
     let exports = {
-        projectSection:null,
-        renderProjectCollection: function (projects) {
+        projectSection: null,
+        renderData: function (projects) {
             for (let i = 0; i < projects.length; i++) {
-               renderer.renderProject(projects[i]);
+                renderer.renderProject(projects[i]);
+                renderTasksInProject(projects[i]);
             }
         },
         renderProject: function (project) {
@@ -79,12 +86,20 @@ let renderer = (function () {
             document.importNode(content);
             renderer.projectSection.appendChild(content.cloneNode(true));
         },
-        renderTask: function (project) {
-            let taskContainer = project.element.querySelector('.taskList');
-            if (!taskContainer) {
-                taskContainer = document.createElement('ul').classList.add('.taskList');
-                project.element.appendChild(taskContainer);
+        renderTask: function (project, task) {
+            let tasksContainer = project.element.querySelector('.taskList');
+            if (!tasksContainer) {
+                //Create ul for the tsks if project doesn't have any tasks yet
+                tasksContainer = document.createElement('ul');
+                tasksContainer.classList.add('taskList');
             }
+            let content = getTaskDOM();
+            let taskNameRow = content.querySelector('.taskName');
+            taskNameRow.innerText = task.Name;
+            task.element = content.querySelector('.task');
+            document.importNode(content);
+            tasksContainer.appendChild(content.cloneNode(true));
+            project.element.appendChild(tasksContainer);
         }
     };
     return exports;
