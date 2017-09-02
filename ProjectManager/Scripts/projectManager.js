@@ -75,6 +75,14 @@ let eventManager = (function () {
             let deleteProjectBtn = project.element.querySelector('.deleteProjectBtn');
             deleteProjectBtn.addEventListener('click', function (event) {
                 ajaxController.deleteProject(project.Id);
+               
+                //remove from page
+                renderer.projectSection.removeChild(project.element);
+
+                //remove project from collection
+                let index = projects.indexOf(project);
+                projects.splice(index, 1);
+
                 event.preventDefault();
                 event.stopImmediatePropagation();
             });
@@ -122,10 +130,10 @@ let renderer = (function () {
             let projectNameDiv = content.querySelector('.projectName');
             projectNameDiv.innerText = project.Name;
             document.importNode(content);
-            let projectContainer = content.cloneNode(true);
-            project.element = projectContainer;
-            renderer.projectSection.appendChild(projectContainer);
-            
+            renderer.projectSection.appendChild(content.cloneNode(true));
+
+            project.element = renderer.projectSection.children[renderer.projectSection.children.length - 1];
+
         },
         renderTask: function (project, task) {
             let tasksContainer = project.element.querySelector('.taskList');
