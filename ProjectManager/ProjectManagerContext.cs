@@ -18,12 +18,12 @@ namespace ProjectManager
             modelBuilder.Entity<Project>()
                     .HasMany(e => e.Tasks)
                     .WithRequired(e => e.Project)
-                    .WillCascadeOnDelete(false);
+                    .WillCascadeOnDelete(true);
 
             modelBuilder.Entity<User>()
                 .HasMany(e => e.Projects)
                 .WithRequired(e => e.User)
-                .WillCascadeOnDelete(false);
+                .WillCascadeOnDelete(true);
         }
     }
 }

@@ -33,6 +33,23 @@ namespace ProjectManager.Controllers
             return Json(projects);
         }
 
+
+        [HttpPost]
+        public JsonResult DeleteProject(int[] data)
+        {
+            int projectId = data[0];
+            db.Projects.Remove(db.Projects.Find(projectId));
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (DbUpdateException ex)
+            {
+                //TODO 
+            }
+            return Json('f');
+        }
+
         //[HttpPost]
         //public JsonResult AddProject(object[] data)
         //{

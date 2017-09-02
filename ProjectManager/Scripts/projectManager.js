@@ -1,7 +1,11 @@
 ﻿document.addEventListener('DOMContentLoaded', function (event) {
     console.log('DOMContentLoaded');
     renderer.projectSection = document.getElementById('projectsSection');
-    ajaxController.getInitalizeData().then(saveData).then(renderer.renderData);
+    ajaxController
+        .getInitalizeData()
+        .then(saveData)
+        .then(renderer.renderData)
+        .then(eventManager.addEvents);
 });
 
 
@@ -45,9 +49,42 @@ let ajaxController = (function () {
                     error: reject
                 });
             });
-        }
+        },
+        deleteProject: function (projectId) {
+            return new Promise(function (resolve, reject) {
+                $.ajax({
+                    type: "POST",
+                    url: "/Projects/DeleteProject",
+                    data: JSON.stringify([projectId]),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: resolve,
+                    error: reject
+                });
+            });
+        },
     };
 
+    return exports;
+})();
+
+
+let eventManager = (function () {
+    let exports = {
+        addProjectEvents: function (project) {
+            let deleteProjectBtn = project.element.querySelector('.deleteProjectBtn');
+            deleteProjectBtn.addEventListener('click', function (event) {
+                ajaxController.deleteProject(project.Id);
+                event.preventDefault();
+                event.stopImmediatePropagation();
+            });
+        },
+        addEvents: function (projects) {
+            for (let i = 0; i < projects.length; i++) {
+                eventManager.addProjectEvents(projects[i]);
+            }
+        }
+    };
     return exports;
 })();
 
@@ -76,15 +113,19 @@ let renderer = (function () {
                 renderer.renderProject(projects[i]);
                 renderTasksInProject(projects[i]);
             }
+            return projects;
         },
         renderProject: function (project) {
             let content = getProjectDOM();
             //TODO refactor this
-            project.element = content.querySelector('.projectContainer');
+
             let projectNameDiv = content.querySelector('.projectName');
             projectNameDiv.innerText = project.Name;
             document.importNode(content);
-            renderer.projectSection.appendChild(content.cloneNode(true));
+            let projectContainer = content.cloneNode(true);
+            project.element = projectContainer;
+            renderer.projectSection.appendChild(projectContainer);
+            
         },
         renderTask: function (project, task) {
             let tasksContainer = project.element.querySelector('.taskList');
