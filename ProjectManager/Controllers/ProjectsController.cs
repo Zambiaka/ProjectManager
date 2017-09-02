@@ -50,24 +50,26 @@ namespace ProjectManager.Controllers
             return Json('f');
         }
 
-        //[HttpPost]
-        //public JsonResult AddProject(object[] data)
-        //{
-        //    string projectName = data[0].ToString();
-        //    int userId = Convert.ToInt32(data[1]);
-        //    var project = new Models.Project { Name = projectName, UserId = userId };
-        //    db.Projects.Add(project);
+        [HttpPost]
+        public JsonResult AddProject(object[] data)
+        {
+            string projectName = data[0].ToString();
+            int userId = Convert.ToInt32(data[1]);
+            var project = new Models.Project { Name = projectName, UserId = userId };
+            db.Projects.Add(project);
 
-        //    try
-        //    {
-        //        db.SaveChanges();
-        //    }
-        //    catch (DbUpdateException ex)
-        //    {
-        //        //TODO 
-        //    }
-        //    return Json(project.ToSerializable());
-        //}
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (DbUpdateException ex)
+            {
+                //TODO 
+            }
+
+            //Don't need to return this
+            return Json(project);
+        }
 
     }
 }

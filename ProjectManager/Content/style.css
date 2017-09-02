@@ -1,8 +1,10 @@
 ﻿body {
     overflow: auto;
     background-image: url("images/background.png");
-    background-size: 100%;
-    background-attachment: fixed 
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    background-attachment: fixed;
 }
 
 button {
@@ -10,9 +12,11 @@ button {
     background-color: transparent;
 }
 
-#projectsSection{
-    height:auto;
-    width:700px;
+#projectsSection {
+    display: block;
+    margin: auto;
+    height: auto;
+    width: 700px;
 }
 
 .projectContainer {
@@ -21,8 +25,7 @@ button {
     width: 700px;
     padding: 0;
     border-radius: 0 0 10px 10px;
-    margin-left: 100px;
-    margin-top: 100px;
+    margin-top: 50px;
     /* Firefox v3.5+ */
     -moz-box-shadow: 0px 1px 2px 0px rgba(0,0,0,0.5);
     /* Safari v3.0+ and by Chrome v0.2+ */
@@ -31,8 +34,7 @@ button {
     box-shadow: 0px 1px 2px 0px rgba(0,0,0,0.5);
 }
 
-.project {
-    padding-top: 12px;
+.blue {
     /* Firefox v3.6+ */
     background-image: -moz-linear-gradient(37% 0% -90deg,rgb(81,131,190) 0%,rgb(55,93,158) 99%);
     /* safari v4.0+ and by Chrome v3.0+ */
@@ -57,6 +59,10 @@ button {
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#ff5183be,endColorstr=#ff375d9e,GradientType=0);
 }
 
+.project {
+    padding-top: 12px;
+}
+
     .project .col {
         padding-left: 0;
     }
@@ -65,8 +71,7 @@ button {
         padding-left: 35px;
     }
 
-.projectName {
-    margin-top: 2px;
+.text {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 18px;
     line-height: 120%;
@@ -78,6 +83,10 @@ button {
     -ms-filter: "progid:DXImageTransform.Microsoft.dropshadow(OffX = 0,OffY = 1,Color = #ff28405d,Positive = true)";
     zoom: 1;
     filter: progid:DXImageTransform.Microsoft.dropshadow(OffX = 0,OffY = 1,Color = #ff28405d,Positive = true);
+}
+
+.projectName {
+    margin-top: 2px;
 }
 
 .projectIcon img {
@@ -233,12 +242,12 @@ button {
 }
 
 .taskList li:nth-last-of-type(1) {
-    height:60px;
+    height: 60px;
 }
 
-.taskList li:nth-last-of-type(1):hover{
-       border-radius: 0 0 10px 10px;
-}
+    .taskList li:nth-last-of-type(1):hover {
+        border-radius: 0 0 10px 10px;
+    }
 
 .taskList {
     padding-left: 0;
@@ -264,3 +273,23 @@ button {
     height: 11px;
     background-color: #CCCCCC;
 }
+
+#addProject {
+    display: block;
+    margin: auto;
+    padding: 0;
+    padding-top: 4px;
+    margin-top: 50px;
+    margin-bottom: 50px;
+    height: 46px;
+    width: 209px;
+}
+
+    #addProject img {
+        padding: 6px;
+        padding-left:10px;
+    }
+
+    #addProject span {
+        padding-left: 10px;
+    }
