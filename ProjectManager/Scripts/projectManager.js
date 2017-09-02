@@ -75,7 +75,7 @@ let renderer = (function () {
             //TODO refactor this
             project.element = content.querySelector('.projectContainer');
             let projectNameDiv = content.querySelector('.projectName');
-            projectNameDiv.innerText = project.name;
+            projectNameDiv.innerText = project.Name;
             document.importNode(content);
             renderer.projectSection.appendChild(content.cloneNode(true));
         },

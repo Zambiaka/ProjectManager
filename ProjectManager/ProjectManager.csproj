@@ -115,6 +115,7 @@
     <Content Include="Content\images\edit_task.png" />
     <Content Include="Content\images\project_icon.png" />
     <Content Include="Content\images\select_task.png" />
+    <Content Include="Content\style.css" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
     <Content Include="fonts\glyphicons-halflings-regular.woff2" />
