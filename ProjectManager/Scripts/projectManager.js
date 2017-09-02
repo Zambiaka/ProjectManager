@@ -6,6 +6,11 @@
         .then(saveData)
         .then(renderer.renderData)
         .then(eventManager.addEvents);
+
+    let addProjectButton = document.getElementById("addProject");
+    addProjectButton.addEventListener('click', function () {
+        renderer.createProject();
+    });
 });
 
 
@@ -127,13 +132,13 @@ let renderer = (function () {
             let content = getProjectDOM();
             //TODO refactor this
 
-            let projectNameDiv = content.querySelector('.projectName');
-            projectNameDiv.innerText = project.Name;
+            let projectName = content.querySelector('.projectName');
+            projectName.value = project.Name;
             document.importNode(content);
             renderer.projectSection.appendChild(content.cloneNode(true));
 
             project.element = renderer.projectSection.children[renderer.projectSection.children.length - 1];
-
+            return project.element;
         },
         renderTask: function (project, task) {
             let tasksContainer = project.element.querySelector('.taskList');
@@ -149,6 +154,14 @@ let renderer = (function () {
             document.importNode(content);
             tasksContainer.appendChild(content.cloneNode(true));
             project.element.appendChild(tasksContainer);
+        },
+        createProject: function () {
+            //TODO create increment New TODO List(1), then New TODO List(2)
+            //TODO input style width, on focus 
+            let projectEl = renderer.renderProject({ Name: "New TODO List" });
+            let projectNameInput = projectEl.querySelector('.projectName');
+            projectNameInput.removeAttribute('disabled');
+            projectNameInput.focus();
         }
     };
     return exports;

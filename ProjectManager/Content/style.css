@@ -71,6 +71,10 @@ button {
         padding-left: 35px;
     }
 
+    .project .col-xs-9 {
+        margin-top: 2px;
+    }
+
 .text {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 18px;
@@ -85,8 +89,9 @@ button {
     filter: progid:DXImageTransform.Microsoft.dropshadow(OffX = 0,OffY = 1,Color = #ff28405d,Positive = true);
 }
 
-.projectName {
-    margin-top: 2px;
+input.projectName {
+    border: none;
+    background-color: transparent;
 }
 
 .projectIcon img {
@@ -287,7 +292,7 @@ button {
 
     #addProject img {
         padding: 6px;
-        padding-left:10px;
+        padding-left: 10px;
     }
 
     #addProject span {
