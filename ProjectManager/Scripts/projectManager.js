@@ -95,6 +95,10 @@ let ajaxController = (function () {
         deleteTask: function (taskId) {
             let url = "/Tasks/DeleteTask";
             return ajaxPost(url, [taskId]);
+        },
+        editTask: function (taskId, newName) {
+            let url = "/Tasks/EditTask";
+            return ajaxPost(url, [taskId, newName]);
         }
     };
 
@@ -102,42 +106,51 @@ let ajaxController = (function () {
 })();
 
 let eventManager = (function () {
-    //Project events
-    function editProject(project) {
-        let projectNameInput = project.element.querySelector('.projectName');
-        $(projectNameInput).off();
-        let oldProjectName = projectNameInput.value;
-        $(projectNameInput).on('keydown', function (e) {
+
+    function editName(element, id, onEnter) {
+        let input = element.querySelector('input');
+        $(input).off();
+        let oldName = input.value;
+        $(input).on('keydown', function (e) {
             const enterKey = 13;
             const escKey = 27;
             if (e.keyCode === enterKey) {
-                renderer.disableEditProjectMode(project.element);
-                if (projectNameInput.value !== oldProjectName) {
-                    //TODO name validation
-                    ajaxController.editProject(project.Id, projectNameInput.value);
+                renderer.disableEditMode(element);
+                if (input.value !== oldName) {
+                    onEnter(id, input.value);
                 }
             } else if (e.keyCode === escKey) {
-                projectNameInput.value = oldProjectName;
-                renderer.disableEditProjectMode(project.element);
+                input.value = oldName;
+                renderer.disableEditMode(element);
             }
         });
+    }
+
+
+    //Project events
+    function editProject(project) {
+        function onEnter(projectId, newName) {
+            ajaxController.editProject(projectId, newName);
+        }
+
+        editName(project.element, project.Id, onEnter);
 
         let editProjectBtn = project.element.querySelector('.editProjectBtn');
-        editProjectBtn.addEventListener('click', function () { renderer.enableEditProjectMode(project) });
+        editProjectBtn.addEventListener('click', function () { renderer.enableEditMode(project.element) });
     }
 
     //TODO refactor this
     function projectTemplate(projectTemplate) {
-        let projectNameInput = projectTemplate.element.querySelector('.projectName');
-        let oldProjectName = projectNameInput.value;
-        $(projectNameInput).on('keydown', function (e) {
+        let input = projectTemplate.element.querySelector('.projectName');
+        let oldProjectName = input.value;
+        $(input).on('keydown', function (e) {
             const enterKey = 13;
             const escKey = 27;
             if (e.keyCode === enterKey) {
-                renderer.disableEditProjectMode(projectTemplate.element);
+                renderer.disableEditMode(projectTemplate.element);
                 //TODO
                 let userId = 1;
-                ajaxController.addProject(projectNameInput.value, userId).then(dataManager.saveProject);
+                ajaxController.addProject(input.value, userId).then(dataManager.saveProject);
                 //save element from template
                 projects[projects.length - 1].element = projectTemplate.element;
 
@@ -172,8 +185,19 @@ let eventManager = (function () {
             event.preventDefault();
             event.stopImmediatePropagation();
         });
-
     }
+
+    function editTask(task) {
+        function onEnter(taskId, newName) {
+            ajaxController.editTask(taskId, newName);
+        }
+
+        editName(task.element, task.Id, onEnter);
+
+        let editTaskBtn = task.element.querySelector('.editTaskBtn');
+        editTaskBtn.addEventListener('click', function () { renderer.enableEditMode(task.element) });
+    }
+
 
     let exports = {
         attachProjectEvents: function (project) {
@@ -193,6 +217,7 @@ let eventManager = (function () {
             for (let i = 0; i < project.Tasks.length; i++) {
                 let task = project.Tasks[i]
                 deleteTask(task);
+                editTask(task);
             }
         }
     };
@@ -259,18 +284,19 @@ let renderer = (function () {
             //TODO create increment New TODO List(1), then New TODO List(2)
             //TODO input style width, on focus 
             let project = renderer.renderProject({ Name: "New TODO List" });
-            renderer.enableEditProjectMode(project);
+            renderer.enableEditMode(project.element);
             return project;
         },
-        enableEditProjectMode: function (project) {
-            let projectNameInput = project.element.querySelector('.projectName');
-            projectNameInput.disabled = false;
-            projectNameInput.focus();
-            $(projectNameInput).select();
+        enableEditMode: function (element) {
+            let input = element.querySelector('input');
+            input.disabled = false;
+            input.focus();
+            $(input).select();
         },
-        disableEditProjectMode: function (projectEl) {
-            let projectNameInput = projectEl.querySelector('.projectName');
-            projectNameInput.disabled = true;
+        disableEditMode: function (element) {
+            let input = element.querySelector('input');
+            input.selectionEnd = input.selectionStart;
+            input.disabled = true;
         },
         removeElFromPage: function (el) {
             el.remove();
