@@ -18,7 +18,6 @@ function addProject() {
 
 let projects = [];
 
-
 let dataManager = (function () {
     let exports = {
         saveData: function (data) {
@@ -26,7 +25,21 @@ let dataManager = (function () {
             return projects;
         },
         saveProject: function (data) {
-            projects.push(JSON.parse(data);
+            projects.push(JSON.parse(data));
+        },
+        removeProjectFromCollection: function (project) {
+            let index = projects.indexOf(project);
+            projects.splice(index, 1);
+        },
+        removeTaskFromCollection: function (taskToRemove) {
+            for (let i = 0; i < projects.length; i++) {
+                if (projects[i].Tasks.length) {
+                    let index = projects[i].Tasks.indexOf(taskToRemove);
+                    if (index != -1) {
+                        projects[i].Tasks.splice(index, 1);
+                    }
+                }
+            }
         }
     };
     return exports;
@@ -78,6 +91,10 @@ let ajaxController = (function () {
         editProject: function (projectId, newName) {
             let url = "/Projects/EditProject";
             return ajaxPost(url, [projectId, newName]);
+        },
+        deleteTask: function (taskId) {
+            let url = "/Tasks/DeleteTask";
+            return ajaxPost(url, [taskId]);
         }
     };
 
@@ -85,7 +102,7 @@ let ajaxController = (function () {
 })();
 
 let eventManager = (function () {
-
+    //Project events
     function editProject(project) {
         let projectNameInput = project.element.querySelector('.projectName');
         $(projectNameInput).off();
@@ -126,7 +143,7 @@ let eventManager = (function () {
 
                 eventManager.attachProjectEvents(projectTemplate);
             } else if (e.keyCode === escKey) {
-                renderer.removeProjectElFromPage(projectTemplate.element);
+                renderer.removeElFromPage(projectTemplate.element);
             }
         });
     }
@@ -135,15 +152,27 @@ let eventManager = (function () {
         let deleteProjectBtn = project.element.querySelector('.deleteProjectBtn');
         deleteProjectBtn.addEventListener('click', function (event) {
             ajaxController.deleteProject(project.Id);
-            renderer.removeProjectElFromPage(project.element);
+            renderer.removeElFromPage(project.element);
 
-            //remove project from collection
-            let index = projects.indexOf(project);
-            projects.splice(index, 1);
+            dataManager.removeProjectFromCollection();
 
             event.preventDefault();
             event.stopImmediatePropagation();
         });
+    }
+
+    //Task events
+
+    function deleteTask(task) {
+        let deleteTaskBtn = task.element.querySelector('.deleteTaskBtn');
+        deleteTaskBtn.addEventListener('click', function (event) {
+            ajaxController.deleteTask(task.Id);
+            renderer.removeElFromPage(task.element);
+            dataManager.removeTaskFromCollection(task);
+            event.preventDefault();
+            event.stopImmediatePropagation();
+        });
+
     }
 
     let exports = {
@@ -154,10 +183,17 @@ let eventManager = (function () {
         attachEvents: function (projects) {
             for (let i = 0; i < projects.length; i++) {
                 eventManager.attachProjectEvents(projects[i]);
+                eventManager.attachTaskEvents(projects[i]);
             }
         },
         attachProjectTemplateEvents: function (project) {
             projectTemplate(project);
+        },
+        attachTaskEvents: function (project) {
+            for (let i = 0; i < project.Tasks.length; i++) {
+                let task = project.Tasks[i]
+                deleteTask(task);
+            }
         }
     };
     return exports;
@@ -210,11 +246,14 @@ let renderer = (function () {
             }
             let content = getTaskDOM();
             let taskNameRow = content.querySelector('.taskName');
-            taskNameRow.innerText = task.Name;
-            task.element = content.querySelector('.task');
+            taskNameRow.value = task.Name;
             document.importNode(content);
+
             tasksContainer.appendChild(content.cloneNode(true));
             project.element.appendChild(tasksContainer);
+            let tasks = project.element.querySelectorAll('.task');
+
+            task.element = tasks[tasks.length - 1];
         },
         createProject: function () {
             //TODO create increment New TODO List(1), then New TODO List(2)
@@ -231,10 +270,10 @@ let renderer = (function () {
         },
         disableEditProjectMode: function (projectEl) {
             let projectNameInput = projectEl.querySelector('.projectName');
-            projectNameInput.disabled = true;;
+            projectNameInput.disabled = true;
         },
-        removeProjectElFromPage: function (projectEl) {
-            renderer.projectSection.removeChild(projectEl);
+        removeElFromPage: function (el) {
+            el.remove();
         }
     };
     return exports;
