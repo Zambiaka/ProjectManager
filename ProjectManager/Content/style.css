@@ -92,6 +92,12 @@ button {
 input.projectName {
     border: none;
     background-color: transparent;
+    width:100%;
+}
+
+input.projectName:focus{
+    border:none;
+    border-bottom: 1px solid white;
 }
 
 .projectIcon img {

@@ -12,6 +12,7 @@ namespace ProjectManager.Controllers
     {
         private ProjectManagerContext db = new ProjectManagerContext();
 
+        //TODO Move to helper
         private string ToJson(object obj)
         {
             var serializeSettings = new JsonSerializerSettings()
@@ -59,7 +60,7 @@ namespace ProjectManager.Controllers
         {
             string projectName = data[0].ToString();
             int userId = Convert.ToInt32(data[1]);
-            var project = new Models.Project { Name = projectName, UserId = userId };
+            var project = new Models.Project { Name = projectName, UserId = userId, User= db.Users.Find(userId) };
             db.Projects.Add(project);
 
             try
@@ -70,8 +71,7 @@ namespace ProjectManager.Controllers
             {
                 //TODO 
             }
-            //TODO User == null here (get User and save?)
-            return Json(project);
+            return Json(ToJson(project));
         }
 
 

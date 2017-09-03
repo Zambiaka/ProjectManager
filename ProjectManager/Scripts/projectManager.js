@@ -25,8 +25,8 @@ let dataManager = (function () {
             projects = data.map(JSON.parse);
             return projects;
         },
-        saveProject: function (project) {
-            projects.push(project);
+        saveProject: function (data) {
+            projects.push(JSON.parse(data);
         }
     };
     return exports;
@@ -110,20 +110,23 @@ let eventManager = (function () {
     }
 
     //TODO refactor this
-    function projectTemplate(project) {
-        let projectNameInput = project.element.querySelector('.projectName');
+    function projectTemplate(projectTemplate) {
+        let projectNameInput = projectTemplate.element.querySelector('.projectName');
         let oldProjectName = projectNameInput.value;
         $(projectNameInput).on('keydown', function (e) {
             const enterKey = 13;
             const escKey = 27;
             if (e.keyCode === enterKey) {
-                renderer.disableEditProjectMode(project.element);
+                renderer.disableEditProjectMode(projectTemplate.element);
                 //TODO
                 let userId = 1;
                 ajaxController.addProject(projectNameInput.value, userId).then(dataManager.saveProject);
-                eventManager.attachProjectEvents(project);
+                //save element from template
+                projects[projects.length - 1].element = projectTemplate.element;
+
+                eventManager.attachProjectEvents(projectTemplate);
             } else if (e.keyCode === escKey) {
-                renderer.removeProjectElFromPage(project.element);
+                renderer.removeProjectElFromPage(projectTemplate.element);
             }
         });
     }
