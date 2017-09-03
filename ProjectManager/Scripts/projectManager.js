@@ -6,16 +6,12 @@
         .then(saveData)
         .then(renderer.renderData)
         .then(eventManager.addEvents);
-
-    let addProjectButton = document.getElementById("addProject");
-    addProjectButton.addEventListener('click', function () {
-        renderer.createProject();
-    });
 });
 
 
 
 let projects = [];
+let editProjectMode = false;
 
 function saveData(data) {
     projects = data.map(JSON.parse);
@@ -28,19 +24,25 @@ let ajaxController = (function () {
         console.log('error in ajax');
     }
 
+    function ajaxPost(url, data) {
+        return new Promise(function (resolve) {
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: resolve,
+                error: showError
+            });
+        });
+    }
+
     let exports = {
         getInitalizeData: function () {
-            return new Promise(function (resolve) {
-                $.ajax({
-                    type: "POST",
-                    url: "/Projects/GetProjects",
-                    data: JSON.stringify([1]),
-                    contentType: "application/json; charset=utf-8",
-                    dataType: "json",
-                    success: resolve,
-                    error: showError
-                });
-            });
+            let userId = [1]
+            let url = "/Projects/GetProjects";
+            return ajaxPost(url, userId);
         },
         addProject: function (data) {
             return new Promise(function (resolve, reject) {
@@ -56,41 +58,67 @@ let ajaxController = (function () {
             });
         },
         deleteProject: function (projectId) {
-            return new Promise(function (resolve, reject) {
-                $.ajax({
-                    type: "POST",
-                    url: "/Projects/DeleteProject",
-                    data: JSON.stringify([projectId]),
-                    contentType: "application/json; charset=utf-8",
-                    dataType: "json",
-                    success: resolve,
-                    error: reject
-                });
-            });
+            let url = "/Projects/DeleteProject";
+            return ajaxPost(url, [projectId]);
         },
+        editProject: function (projectId, newName) {
+            let url = "/Projects/EditProject";
+            return ajaxPost(url, [projectId, newName]);
+        }
     };
 
     return exports;
 })();
 
-
 let eventManager = (function () {
+    function editProject(project) {
+        let projectNameInput = project.element.querySelector('.projectName');
+        let oldProjectName = projectNameInput.value;
+        projectNameInput.addEventListener('keydown', function (e) {
+            const enterKey = 13;
+            const escKey = 27;
+            if (e.keyCode === enterKey) {
+                renderer.disableEditProjectMode(project.element);
+                if (projectNameInput.value !== oldProjectName) {
+                    //TODO name validation
+                    ajaxController.editProject(project.Id, projectNameInput.value);
+                }
+            } else if (e.keyCode === escKey) {
+                projectNameInput.value = oldProjectName;
+                renderer.disableEditProjectMode(project.element);
+            }
+        });
+
+        let editProjectBtn = project.element.querySelector('.editProjectBtn');
+        editProjectBtn.addEventListener('click', function () { renderer.enableEditProjectMode(project) });
+    }
+
+    function addProject() {
+        let addProjectButton = document.getElementById("addProject");
+        addProjectButton.addEventListener('click', function () {
+            renderer.createProject();
+        });
+    }
+
+    function deleteProject(project) {
+        let deleteProjectBtn = project.element.querySelector('.deleteProjectBtn');
+        deleteProjectBtn.addEventListener('click', function (event) {
+            ajaxController.deleteProject(project.Id);
+            renderer.removeProjectElFromPage(project);
+
+            //remove project from collection
+            let index = projects.indexOf(project);
+            projects.splice(index, 1);
+
+            event.preventDefault();
+            event.stopImmediatePropagation();
+        });
+    }
+
     let exports = {
         addProjectEvents: function (project) {
-            let deleteProjectBtn = project.element.querySelector('.deleteProjectBtn');
-            deleteProjectBtn.addEventListener('click', function (event) {
-                ajaxController.deleteProject(project.Id);
-               
-                //remove from page
-                renderer.projectSection.removeChild(project.element);
-
-                //remove project from collection
-                let index = projects.indexOf(project);
-                projects.splice(index, 1);
-
-                event.preventDefault();
-                event.stopImmediatePropagation();
-            });
+            editProject(project);
+            deleteProject(project);
         },
         addEvents: function (projects) {
             for (let i = 0; i < projects.length; i++) {
@@ -138,7 +166,7 @@ let renderer = (function () {
             renderer.projectSection.appendChild(content.cloneNode(true));
 
             project.element = renderer.projectSection.children[renderer.projectSection.children.length - 1];
-            return project.element;
+            return project;
         },
         renderTask: function (project, task) {
             let tasksContainer = project.element.querySelector('.taskList');
@@ -158,10 +186,21 @@ let renderer = (function () {
         createProject: function () {
             //TODO create increment New TODO List(1), then New TODO List(2)
             //TODO input style width, on focus 
-            let projectEl = renderer.renderProject({ Name: "New TODO List" });
-            let projectNameInput = projectEl.querySelector('.projectName');
-            projectNameInput.removeAttribute('disabled');
+            let project = renderer.renderProject({ Name: "New TODO List" });
+            renderer.enableEditProjectMode(project);
+        },
+        enableEditProjectMode: function (project) {
+            let projectNameInput = project.element.querySelector('.projectName');
+            projectNameInput.disabled = false;
             projectNameInput.focus();
+            $(projectNameInput).select();
+        },
+        disableEditProjectMode: function (projectEl) {
+            let projectNameInput = projectEl.querySelector('.projectName');
+            projectNameInput.disabled = true;;
+        },
+        removeProjectElFromPage: function (projectEl) {
+            renderer.projectSection.removeChild(projectEl);
         }
     };
     return exports;

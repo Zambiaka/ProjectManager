@@ -71,5 +71,28 @@ namespace ProjectManager.Controllers
             return Json(project);
         }
 
+
+        [HttpPost]
+        public JsonResult EditProject(object[] data)
+        {
+            string projectName = data[1].ToString();
+            int projectId = Convert.ToInt32(data[0]);
+
+            var project = db.Projects.Find(projectId);
+            project.Name = projectName;
+
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (DbUpdateException ex)
+            {
+                //TODO 
+            }
+
+            ////Don't need to return this
+            return Json("");
+        }
+
     }
 }
