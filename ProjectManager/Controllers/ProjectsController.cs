@@ -12,6 +12,16 @@ namespace ProjectManager.Controllers
     {
         private ProjectManagerContext db = new ProjectManagerContext();
 
+        private string ToJson(object obj)
+        {
+            var serializeSettings = new JsonSerializerSettings()
+            {
+                ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+            };
+
+           return JsonConvert.SerializeObject(obj, Formatting.Indented, serializeSettings);
+        }
+
         [HttpPost]
         public JsonResult GetProjects(int[] data)
         {
@@ -21,13 +31,7 @@ namespace ProjectManager.Controllers
 
             foreach (var project in currentUserProjects)
             {
-                var serializeSettings = new JsonSerializerSettings()
-                {
-                    ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
-                };
-
-                var projectSerialized = JsonConvert.SerializeObject(project, Formatting.Indented, serializeSettings);
-                projects.Add(projectSerialized);
+                projects.Add(ToJson(project));
             }
 
             return Json(projects);
@@ -66,8 +70,7 @@ namespace ProjectManager.Controllers
             {
                 //TODO 
             }
-
-            //Don't need to return this
+            //TODO User == null here (get User and save?)
             return Json(project);
         }
 

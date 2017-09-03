@@ -3,20 +3,34 @@
     renderer.projectSection = document.getElementById('projectsSection');
     ajaxController
         .getInitalizeData()
-        .then(saveData)
+        .then(dataManager.saveData)
         .then(renderer.renderData)
-        .then(eventManager.addEvents);
+        .then(eventManager.attachEvents);
+
+    let addProjectButton = document.getElementById("addProject");
+    addProjectButton.addEventListener('click', addProject);
 });
 
-
+function addProject() {
+    let projectTemplate = renderer.createProject();
+    eventManager.attachProjectTemplateEvents(projectTemplate);
+}
 
 let projects = [];
-let editProjectMode = false;
 
-function saveData(data) {
-    projects = data.map(JSON.parse);
-    return projects;
-}
+
+let dataManager = (function () {
+    let exports = {
+        saveData: function (data) {
+            projects = data.map(JSON.parse);
+            return projects;
+        },
+        saveProject: function (project) {
+            projects.push(project);
+        }
+    };
+    return exports;
+})();
 
 let ajaxController = (function () {
     //TODO Implement error handling
@@ -44,12 +58,12 @@ let ajaxController = (function () {
             let url = "/Projects/GetProjects";
             return ajaxPost(url, userId);
         },
-        addProject: function (data) {
+        addProject: function (projectName, userId) {
             return new Promise(function (resolve, reject) {
                 $.ajax({
                     type: "POST",
                     url: "/Projects/AddProject",
-                    data: JSON.stringify([data.name, data.id]),
+                    data: JSON.stringify([projectName, userId]),
                     contentType: "application/json; charset=utf-8",
                     dataType: "json",
                     success: resolve,
@@ -71,10 +85,12 @@ let ajaxController = (function () {
 })();
 
 let eventManager = (function () {
+
     function editProject(project) {
         let projectNameInput = project.element.querySelector('.projectName');
+        $(projectNameInput).off();
         let oldProjectName = projectNameInput.value;
-        projectNameInput.addEventListener('keydown', function (e) {
+        $(projectNameInput).on('keydown', function (e) {
             const enterKey = 13;
             const escKey = 27;
             if (e.keyCode === enterKey) {
@@ -93,10 +109,22 @@ let eventManager = (function () {
         editProjectBtn.addEventListener('click', function () { renderer.enableEditProjectMode(project) });
     }
 
-    function addProject() {
-        let addProjectButton = document.getElementById("addProject");
-        addProjectButton.addEventListener('click', function () {
-            renderer.createProject();
+    //TODO refactor this
+    function projectTemplate(project) {
+        let projectNameInput = project.element.querySelector('.projectName');
+        let oldProjectName = projectNameInput.value;
+        $(projectNameInput).on('keydown', function (e) {
+            const enterKey = 13;
+            const escKey = 27;
+            if (e.keyCode === enterKey) {
+                renderer.disableEditProjectMode(project.element);
+                //TODO
+                let userId = 1;
+                ajaxController.addProject(projectNameInput.value, userId).then(dataManager.saveProject);
+                eventManager.attachProjectEvents(project);
+            } else if (e.keyCode === escKey) {
+                renderer.removeProjectElFromPage(project.element);
+            }
         });
     }
 
@@ -104,7 +132,7 @@ let eventManager = (function () {
         let deleteProjectBtn = project.element.querySelector('.deleteProjectBtn');
         deleteProjectBtn.addEventListener('click', function (event) {
             ajaxController.deleteProject(project.Id);
-            renderer.removeProjectElFromPage(project);
+            renderer.removeProjectElFromPage(project.element);
 
             //remove project from collection
             let index = projects.indexOf(project);
@@ -116,21 +144,23 @@ let eventManager = (function () {
     }
 
     let exports = {
-        addProjectEvents: function (project) {
+        attachProjectEvents: function (project) {
             editProject(project);
             deleteProject(project);
         },
-        addEvents: function (projects) {
+        attachEvents: function (projects) {
             for (let i = 0; i < projects.length; i++) {
-                eventManager.addProjectEvents(projects[i]);
+                eventManager.attachProjectEvents(projects[i]);
             }
+        },
+        attachProjectTemplateEvents: function (project) {
+            projectTemplate(project);
         }
     };
     return exports;
 })();
 
 let renderer = (function () {
-
     function getTaskDOM() {
         let template = document.querySelector('#taskTemplate');
         return template.content;
@@ -188,6 +218,7 @@ let renderer = (function () {
             //TODO input style width, on focus 
             let project = renderer.renderProject({ Name: "New TODO List" });
             renderer.enableEditProjectMode(project);
+            return project;
         },
         enableEditProjectMode: function (project) {
             let projectNameInput = project.element.querySelector('.projectName');
