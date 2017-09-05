@@ -150,11 +150,16 @@ let eventManager = (function () {
                 renderer.disableEditMode(projectTemplate.element);
                 //TODO
                 let userId = 1;
-                ajaxController.addProject(input.value, userId).then(dataManager.saveProject);
-                //save element from template
-                projects[projects.length - 1].element = projectTemplate.element;
+                ajaxController.addProject(input.value, userId)
+                    .then(dataManager.saveProject)
+                    .then(
+                    function () {
+                        //save element from template
+                        projects[projects.length - 1].element = projectTemplate.element;
+                        //attach project events
+                        eventManager.attachProjectEvents(projects[projects.length - 1]);
+                    });         
 
-                eventManager.attachProjectEvents(projectTemplate);
             } else if (e.keyCode === escKey) {
                 renderer.removeElFromPage(projectTemplate.element);
             }
