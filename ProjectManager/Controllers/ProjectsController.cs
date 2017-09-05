@@ -40,7 +40,7 @@ namespace ProjectManager.Controllers
 
 
         [HttpPost]
-        public JsonResult DeleteProject(int[] data)
+        public JsonResult Delete(int[] data)
         {
             int projectId = data[0];
             db.Projects.Remove(db.Projects.Find(projectId));
@@ -56,7 +56,7 @@ namespace ProjectManager.Controllers
         }
 
         [HttpPost]
-        public JsonResult AddProject(object[] data)
+        public JsonResult Add(object[] data)
         {
             string projectName = data[0].ToString();
             int userId = Convert.ToInt32(data[1]);
@@ -76,7 +76,7 @@ namespace ProjectManager.Controllers
 
 
         [HttpPost]
-        public JsonResult EditProject(object[] data)
+        public JsonResult Edit(object[] data)
         {
             string projectName = data[1].ToString();
             int projectId = Convert.ToInt32(data[0]);

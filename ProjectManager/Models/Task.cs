@@ -16,19 +16,9 @@
 
         public int ProjectId { get; set; }
 
+        public bool Status { get; set; }
+
         [JsonIgnore]
         public virtual Project Project { get; set; }
-
-        //public TaskSerializable ToSerializable()
-        //{
-        //    return new TaskSerializable { Id = this.Id, Name = this.Name, ProjectId = this.ProjectId };
-        //}
     }
-
-    //public class TaskSerializable
-    //{
-    //    public int Id { get; set; }
-    //    public string Name { get; set; }
-    //    public int ProjectId { get; set; }
-    //}
 }

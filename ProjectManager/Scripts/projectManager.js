@@ -1,8 +1,8 @@
 ﻿document.addEventListener('DOMContentLoaded', function (event) {
     console.log('DOMContentLoaded');
     renderer.projectSection = document.getElementById('projectsSection');
-    ajaxController
-        .getInitalizeData()
+    ajaxController.initalization
+        .getData()
         .then(dataManager.saveData)
         .then(renderer.renderData)
         .then(eventManager.attachEvents);
@@ -66,39 +66,40 @@ let ajaxController = (function () {
     }
 
     let exports = {
-        getInitalizeData: function () {
-            let userId = [1]
-            let url = "/Projects/GetProjects";
-            return ajaxPost(url, userId);
+        initalization: {
+            getData: function () {
+                let userId = [1]
+                let url = "/Projects/GetProjects";
+                return ajaxPost(url, userId);
+            }
         },
-        addProject: function (projectName, userId) {
-            return new Promise(function (resolve, reject) {
-                $.ajax({
-                    type: "POST",
-                    url: "/Projects/AddProject",
-                    data: JSON.stringify([projectName, userId]),
-                    contentType: "application/json; charset=utf-8",
-                    dataType: "json",
-                    success: resolve,
-                    error: reject
-                });
-            });
+        project: {
+            remove: function (projectId) {
+                let url = "/Projects/Delete";
+                return ajaxPost(url, [projectId]);
+            },
+            add: function (projectName, userId) {
+                let url = "/Projects/Add";
+                return ajaxPost(url, [projectName, userId]);
+            },
+            edit: function (projectId, newName) {
+                let url = "/Projects/Edit";
+                return ajaxPost(url, [projectId, newName]);
+            },
         },
-        deleteProject: function (projectId) {
-            let url = "/Projects/DeleteProject";
-            return ajaxPost(url, [projectId]);
-        },
-        editProject: function (projectId, newName) {
-            let url = "/Projects/EditProject";
-            return ajaxPost(url, [projectId, newName]);
-        },
-        deleteTask: function (taskId) {
-            let url = "/Tasks/DeleteTask";
-            return ajaxPost(url, [taskId]);
-        },
-        editTask: function (taskId, newName) {
-            let url = "/Tasks/EditTask";
-            return ajaxPost(url, [taskId, newName]);
+        task: {
+            changeStatus: function (newStatus, taskId) {
+                let url = "/Tasks/ChangeStatus";
+                return ajaxPost(url, [newStatus, taskId]);
+            },
+            remove: function (taskId) {
+                let url = "/Tasks/Delete";
+                return ajaxPost(url, [taskId]);
+            },
+            edit: function (taskId, newName) {
+                let url = "/Tasks/Edit";
+                return ajaxPost(url, [taskId, newName]);
+            }
         }
     };
 
@@ -115,13 +116,13 @@ let eventManager = (function () {
             const enterKey = 13;
             const escKey = 27;
             if (e.keyCode === enterKey) {
-                renderer.disableEditMode(element);
+                renderer.nameEditMode.disable(element);
                 if (input.value !== oldName) {
                     onEnter(id, input.value);
                 }
             } else if (e.keyCode === escKey) {
                 input.value = oldName;
-                renderer.disableEditMode(element);
+                renderer.nameEditMode.disable(element);
             }
         });
     }
@@ -130,13 +131,13 @@ let eventManager = (function () {
     //Project events
     function editProject(project) {
         function onEnter(projectId, newName) {
-            ajaxController.editProject(projectId, newName);
+            ajaxController.project.edit(projectId, newName);
         }
 
         editName(project.element, project.Id, onEnter);
 
         let editProjectBtn = project.element.querySelector('.editProjectBtn');
-        editProjectBtn.addEventListener('click', function () { renderer.enableEditMode(project.element) });
+        editProjectBtn.addEventListener('click', function () { renderer.nameEditMode.enable(project.element) });
     }
 
     //TODO refactor this
@@ -147,10 +148,10 @@ let eventManager = (function () {
             const enterKey = 13;
             const escKey = 27;
             if (e.keyCode === enterKey) {
-                renderer.disableEditMode(projectTemplate.element);
+                renderer.nameEditMode.disable(projectTemplate.element);
                 //TODO
                 let userId = 1;
-                ajaxController.addProject(input.value, userId)
+                ajaxController.project.add(input.value, userId)
                     .then(dataManager.saveProject)
                     .then(
                     function () {
@@ -158,7 +159,7 @@ let eventManager = (function () {
                         projects[projects.length - 1].element = projectTemplate.element;
                         //attach project events
                         eventManager.attachProjectEvents(projects[projects.length - 1]);
-                    });         
+                    });
 
             } else if (e.keyCode === escKey) {
                 renderer.removeElFromPage(projectTemplate.element);
@@ -169,7 +170,7 @@ let eventManager = (function () {
     function deleteProject(project) {
         let deleteProjectBtn = project.element.querySelector('.deleteProjectBtn');
         deleteProjectBtn.addEventListener('click', function (event) {
-            ajaxController.deleteProject(project.Id);
+            ajaxController.project.remove(project.Id);
             renderer.removeElFromPage(project.element);
 
             dataManager.removeProjectFromCollection();
@@ -184,7 +185,7 @@ let eventManager = (function () {
     function deleteTask(task) {
         let deleteTaskBtn = task.element.querySelector('.deleteTaskBtn');
         deleteTaskBtn.addEventListener('click', function (event) {
-            ajaxController.deleteTask(task.Id);
+            ajaxController.task.remove(task.Id);
             renderer.removeElFromPage(task.element);
             dataManager.removeTaskFromCollection(task);
             event.preventDefault();
@@ -194,13 +195,21 @@ let eventManager = (function () {
 
     function editTask(task) {
         function onEnter(taskId, newName) {
-            ajaxController.editTask(taskId, newName);
+            ajaxController.task.edit(taskId, newName);
         }
 
         editName(task.element, task.Id, onEnter);
 
         let editTaskBtn = task.element.querySelector('.editTaskBtn');
-        editTaskBtn.addEventListener('click', function () { renderer.enableEditMode(task.element) });
+        editTaskBtn.addEventListener('click', function () { renderer.nameEditMode.enable(task.element) });
+    }
+
+    function changeStatus(task) {
+        let statusCheckBox = task.element.querySelector('.taskStatus');
+        statusCheckBox.addEventListener('change', function () {
+            task.Status = statusCheckBox.checked;
+            ajaxController.task.changeStatus(task.Status, task.Id);
+        });
     }
 
 
@@ -223,6 +232,7 @@ let eventManager = (function () {
                 let task = project.Tasks[i]
                 deleteTask(task);
                 editTask(task);
+                changeStatus(task);
             }
         }
     };
@@ -289,19 +299,21 @@ let renderer = (function () {
             //TODO create increment New TODO List(1), then New TODO List(2)
             //TODO input style width, on focus 
             let project = renderer.renderProject({ Name: "New TODO List" });
-            renderer.enableEditMode(project.element);
+            renderer.nameEditMode.enable(project.element);
             return project;
         },
-        enableEditMode: function (element) {
-            let input = element.querySelector('input');
-            input.disabled = false;
-            input.focus();
-            $(input).select();
-        },
-        disableEditMode: function (element) {
-            let input = element.querySelector('input');
-            input.selectionEnd = input.selectionStart;
-            input.disabled = true;
+        nameEditMode: {
+            enable:function (element) {
+                let input = element.querySelector('input[type="text"]');
+                input.disabled = false;
+                input.focus();
+                $(input).select();
+            },
+            disable: function (element) {
+                let input = element.querySelector('input[type="text"]');
+                input.selectionEnd = input.selectionStart;
+                input.disabled = true;
+            }
         },
         removeElFromPage: function (el) {
             el.remove();
