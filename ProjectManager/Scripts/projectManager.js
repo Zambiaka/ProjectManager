@@ -27,6 +27,9 @@ let dataManager = (function () {
         saveProject: function (data) {
             projects.push(JSON.parse(data));
         },
+        getProject: function (id) {
+            return projects.filter(function (project) { return project.Id == id })[0];
+        },
         removeProjectFromCollection: function (project) {
             let index = projects.indexOf(project);
             projects.splice(index, 1);
@@ -40,6 +43,11 @@ let dataManager = (function () {
                     }
                 }
             }
+        },
+        saveTaskToCollection: function (data) {
+            let task = JSON.parse(data);
+            let project = dataManager.getProject(task.ProjectId);
+            project.Tasks.push(task);
         }
     };
     return exports;
@@ -99,6 +107,10 @@ let ajaxController = (function () {
             edit: function (taskId, newName) {
                 let url = "/Tasks/Edit";
                 return ajaxPost(url, [taskId, newName]);
+            },
+            add: function (projectId, taskName) {
+                let url = "/Tasks/Add";
+                return ajaxPost(url, [projectId, taskName]);
             }
         }
     };
@@ -137,7 +149,28 @@ let eventManager = (function () {
         editName(project.element, project.Id, onEnter);
 
         let editProjectBtn = project.element.querySelector('.editProjectBtn');
-        editProjectBtn.addEventListener('click', function () { renderer.nameEditMode.enable(project.element) });
+        editProjectBtn.addEventListener('click', function () {
+            renderer.nameEditMode.enable(project.element)
+        });
+    }
+
+    //Add task row events (attach it with project events, because this row is placed in project template Index.cshtml
+    function addTaskRow(project) {
+        let addTaskBtn = project.element.querySelector('.addTaskBtn');
+        let newTaskName = project.element.querySelector('.newTaskName');
+        addTaskBtn.addEventListener('click', function () {
+            if (newTaskName.value) {
+                //TODO Validation here
+                ajaxController.task.add(project.Id, newTaskName.value)
+                    .then(dataManager.saveTaskToCollection)
+                    .then(function () {
+                        let task = project.Tasks[project.Tasks.length - 1];
+                        return task;
+                    })
+                    .then(renderer.renderTask);
+                //TODO!!! 
+            }
+        });
     }
 
     //TODO refactor this
@@ -201,7 +234,9 @@ let eventManager = (function () {
         editName(task.element, task.Id, onEnter);
 
         let editTaskBtn = task.element.querySelector('.editTaskBtn');
-        editTaskBtn.addEventListener('click', function () { renderer.nameEditMode.enable(task.element) });
+        editTaskBtn.addEventListener('click', function () {
+            renderer.nameEditMode.enable(task.element)
+        });
     }
 
     function changeStatus(task) {
@@ -217,6 +252,7 @@ let eventManager = (function () {
         attachProjectEvents: function (project) {
             editProject(project);
             deleteProject(project);
+            addTaskRow(project);
         },
         attachEvents: function (projects) {
             for (let i = 0; i < projects.length; i++) {
@@ -252,7 +288,7 @@ let renderer = (function () {
 
     function renderTasksInProject(project) {
         for (let i = 0; i < project.Tasks.length; i++) {
-            renderer.renderTask(project, project.Tasks[i]);
+            renderer.renderTask(project.Tasks[i]);
         }
     }
 
@@ -277,7 +313,8 @@ let renderer = (function () {
             project.element = renderer.projectSection.children[renderer.projectSection.children.length - 1];
             return project;
         },
-        renderTask: function (project, task) {
+        renderTask: function (task) {
+            let project =dataManager.getProject(task.ProjectId);
             let tasksContainer = project.element.querySelector('.taskList');
             if (!tasksContainer) {
                 //Create ul for the tsks if project doesn't have any tasks yet
@@ -303,7 +340,7 @@ let renderer = (function () {
             return project;
         },
         nameEditMode: {
-            enable:function (element) {
+            enable: function (element) {
                 let input = element.querySelector('input[type="text"]');
                 input.disabled = false;
                 input.focus();

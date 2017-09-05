@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using ProjectManager.Helpers;
+using System;
 using System.Data.Entity.Infrastructure;
 using System.Web.Mvc;
-using Newtonsoft.Json;
 
 namespace ProjectManager.Controllers
 {
@@ -72,6 +70,30 @@ namespace ProjectManager.Controllers
 
             ////Don't need to return this
             return Json("");
+        }
+
+        [HttpPost]
+        public JsonResult Add(object[] data)
+        {
+            int projectId = Convert.ToInt32(data[0]);
+            string taskName = data[1].ToString();
+
+
+            var project = db.Projects.Find(projectId);
+            var task = new Models.Task { Name = taskName, ProjectId = projectId, Project = db.Projects.Find(projectId) };
+            project.Tasks.Add(task);
+
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (DbUpdateException ex)
+            {
+                //TODO 
+            }
+
+            ////Don't need to return this
+            return Json(Helper.ToJson(task));
         }
     }
 }

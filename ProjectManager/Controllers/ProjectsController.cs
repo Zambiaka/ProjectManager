@@ -1,9 +1,9 @@
-﻿using System;
+﻿using ProjectManager.Helpers;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Data.Entity.Infrastructure;
+using System.Linq;
 using System.Web.Mvc;
-using Newtonsoft.Json;
 
 namespace ProjectManager.Controllers
 {
@@ -11,17 +11,6 @@ namespace ProjectManager.Controllers
     public class ProjectsController : Controller
     {
         private ProjectManagerContext db = new ProjectManagerContext();
-
-        //TODO Move to helper
-        private string ToJson(object obj)
-        {
-            var serializeSettings = new JsonSerializerSettings()
-            {
-                ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
-            };
-
-           return JsonConvert.SerializeObject(obj, Formatting.Indented, serializeSettings);
-        }
 
         [HttpPost]
         public JsonResult GetProjects(int[] data)
@@ -32,7 +21,7 @@ namespace ProjectManager.Controllers
 
             foreach (var project in currentUserProjects)
             {
-                projects.Add(ToJson(project));
+                projects.Add(Helper.ToJson(project));
             }
 
             return Json(projects);
@@ -71,7 +60,7 @@ namespace ProjectManager.Controllers
             {
                 //TODO 
             }
-            return Json(ToJson(project));
+            return Json(Helper.ToJson(project));
         }
 
 
