@@ -168,7 +168,7 @@ let eventManager = (function () {
                         return task;
                     })
                     .then(renderer.renderTask);
-                //TODO!!! 
+                newTaskName.value = "";
             }
         });
     }
