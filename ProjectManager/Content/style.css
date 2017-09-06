@@ -12,6 +12,13 @@ button {
     background-color: transparent;
 }
 
+html {
+    border-bottom: 6px #333333 solid;
+    width: 100%;
+    height: 100%;
+    border-top: 6px #333333 solid;
+}
+
 input {
     border: none;
     background-color: transparent;
@@ -20,11 +27,6 @@ input {
 
 .header {
     width: 100%;
-    border-top: 6px #333333 solid;
-}
-
-footer {
-    border-bottom: 6px #333333 solid;
 }
 
     .header > img, footer > img {
