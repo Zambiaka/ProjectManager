@@ -1,14 +1,17 @@
 ﻿document.addEventListener('DOMContentLoaded', function (event) {
     console.log('DOMContentLoaded');
-    renderer.projectSection = document.getElementById('projectsSection');
-    ajaxController.initalization
-        .getData()
-        .then(dataManager.saveData)
-        .then(renderer.renderData)
-        .then(eventManager.attachEvents);
+    loginMode.on();
 
-    let addProjectButton = document.getElementById("addProject");
-    addProjectButton.addEventListener('click', addProject);
+
+    //renderer.projectSection = document.getElementById('projectsSection');
+    //ajaxController.initalization
+    //    .getData()
+    //    .then(dataManager.saveData)
+    //    .then(renderer.renderData)
+    //    .then(eventManager.attachEvents);
+
+    //let addProjectButton = document.getElementById("addProject");
+    //addProjectButton.addEventListener('click', addProject);
 });
 
 function addProject() {
@@ -18,8 +21,25 @@ function addProject() {
 
 let projects = [];
 
-let dataManager = (function () {
+let loginMode = (function () {
+    let exports= {
+        on: function () {
+            let loginForm = document.getElementById("loginForm");
+            let content = document.getElementById("content");
+            loginForm.style.display = "block";
+            content.style.display = "none";
+        },
+        off: function () {
+            let loginForm = document.getElementById("loginForm");
+            let content = document.getElementById("content");
+            content.style.display = "block";
+            loginForm.style.display = "none";
+        }
+    }
+    return exports;
+})();
 
+let dataManager = (function () {
     function swipeTasksPriority(task, action) {
 
         let condition;

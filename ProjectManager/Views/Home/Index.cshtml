@@ -16,7 +16,21 @@
     <title>Project Manager</title>
 </head>
 <body>
-    <div class="content">
+    <div id="loginForm">
+        <input type="text" id="login" />
+        <input type="password" id="password" />
+        <input type="text" id="name" />
+        <div class="btn-group">
+            <button id="registrBtn">
+                Register
+            </button>
+            <button id="loginBtn">
+                Login
+            </button>
+        </div>
+    </div>
+
+    <div id="content">
         <div class="header"><img src="~/Content/images/page_header.png" /></div>
         <div id="projectsSection"></div>
         <button id="addProject" class="blue text"><img src="~/Content/images/add_project_btn.png" /><span>Add TODO List</span></button>
