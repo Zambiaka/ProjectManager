@@ -15,8 +15,23 @@ button {
 input {
     border: none;
     background-color: transparent;
-    width:100%;
+    width: 100%;
 }
+
+.header {
+    width: 100%;
+    border-top: 6px #333333 solid;
+}
+
+footer {
+    border-bottom: 6px #333333 solid;
+}
+
+    .header > img, footer > img {
+        padding: 50px;
+        margin: auto;
+        display: block;
+    }
 
 #projectsSection {
     display: block;
@@ -96,13 +111,12 @@ input {
 }
 
 input.projectName {
-    
 }
 
-input.projectName:focus{
-    border:none;
-    border-bottom: 1px solid white;
-}
+    input.projectName:focus {
+        border: none;
+        border-bottom: 1px solid white;
+    }
 
 .projectIcon img {
     margin-left: 15px;
@@ -231,26 +245,31 @@ input.projectName:focus{
     height: 100%;
 }
 
-.task .col-xs-1 {
-    padding-top: 17px;
-    width: 46px;
-    border-right: 1px solid #EFDADF;
+.task {
+    border-bottom: 1px solid #E7EBEA;
 }
 
-.task .col-xs-9 {
-    padding-top: 17px;
-    margin-left: 4px;
-    border-left: 1px solid #EFDADF;
-}
+    .task .col-xs-1 {
+        padding-top: 17px;
+        width: 46px;
+        border-right: 1px solid #EFDADF;
+    }
 
-.task .col-xs-2 {
-    padding-top: 15px;
-    padding-left: 12px;
-}
+    .task .col-xs-9 {
+        padding-top: 17px;
+        margin-left: 4px;
+        border-left: 1px solid #EFDADF;
+        border-right: 1px solid #E7EBEA;
+    }
 
-.task:hover {
-    background-color: #FCFED5;
-}
+    .task .col-xs-2 {
+        padding-top: 15px;
+        padding-left: 12px;
+    }
+
+    .task:hover {
+        background-color: #FCFED5;
+    }
 
 .taskStatus {
     padding-left: 0;
@@ -258,6 +277,7 @@ input.projectName:focus{
 
 .taskList li:nth-last-of-type(1) {
     height: 60px;
+    border-bottom: none;
 }
 
     .taskList li:nth-last-of-type(1):hover {
@@ -273,6 +293,13 @@ input.projectName:focus{
 }
 
 
+/*.priority {
+    width: 9px;
+    height: 15px;
+    display: inline-table;
+    margin-bottom: 6px;
+}*/
+
 .separator {
     width: 1px;
     padding: 0;
@@ -282,6 +309,38 @@ input.projectName:focus{
 .projectBtnSeparator {
     height: 15px;
     background-color: #5284BF;
+}
+
+.priority {
+    line-height: normal;
+    font-size: 10px;
+    height: 23px;
+    width: 16px;
+    padding: 0;
+    margin: 0;
+    display: inline-block;
+}
+
+.priorityDown, .priorityUp {
+    border: none;
+    height: 11px;
+    width: 16px;
+    padding: 0;
+    margin: 0 auto;
+}
+
+.horizontal-separator {
+    display: block;
+    padding: 0;
+    margin: auto;
+    height: 1px;
+    width: 8px;
+    background-color: #CCCCCC;
+}
+
+.priorityDown > img, .priorityUp > img {
+    padding: 0;
+    margin: 0;
 }
 
 .taskBtnSeparator {
@@ -295,7 +354,6 @@ input.projectName:focus{
     padding: 0;
     padding-top: 4px;
     margin-top: 50px;
-    margin-bottom: 50px;
     height: 46px;
     width: 209px;
 }

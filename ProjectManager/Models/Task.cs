@@ -18,6 +18,8 @@
 
         public bool Status { get; set; }
 
+        public int Priority { get; set; }
+
         [JsonIgnore]
         public virtual Project Project { get; set; }
     }

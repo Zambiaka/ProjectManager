@@ -115,6 +115,10 @@
     <Content Include="Content\images\delete_task.png" />
     <Content Include="Content\images\edit_project.png" />
     <Content Include="Content\images\edit_task.png" />
+    <Content Include="Content\images\page_footer.png" />
+    <Content Include="Content\images\page_header.png" />
+    <Content Include="Content\images\priority_down.png" />
+    <Content Include="Content\images\priority_up.png" />
     <Content Include="Content\images\project_icon.png" />
     <Content Include="Content\images\select_task.png" />
     <Content Include="Content\style.css" />

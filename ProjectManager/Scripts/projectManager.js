@@ -19,9 +19,44 @@ function addProject() {
 let projects = [];
 
 let dataManager = (function () {
+
+    function swipeTasksPriority(task, action) {
+
+        let condition;
+        if (action.increase) {
+            condition = function (taskInProject) {
+                return taskInProject.Priority < task.Priority;
+            }
+        } else {
+            condition = function (taskInProject) {
+                return taskInProject.Priority > task.Priority;
+            }
+        }
+
+        let project = dataManager.getProject(task.ProjectId);
+        let taskWithHigherPriority = project.Tasks
+            .filter(function (taskInProject) { return condition(taskInProject); })
+            .sort()[0];
+        if (taskWithHigherPriority) {
+            let taskPriority = task.Priority;
+            task.Priority = taskWithHigherPriority.Priority;
+            taskWithHigherPriority.Priority = taskPriority;
+            sortTasksByPriority(project);
+        }
+    }
+
+    function sortTasksByPriority(project) {
+        project.Tasks.sort(function (task1, task2) {
+            return task1.Priority - task2.Priority;
+        });
+    }
+
     let exports = {
         saveData: function (data) {
             projects = data.map(JSON.parse);
+            for (let i = 0; i < projects.length; i++) {
+                sortTasksByPriority(projects[i]);
+            }
             return projects;
         },
         saveProject: function (data) {
@@ -48,6 +83,21 @@ let dataManager = (function () {
             let task = JSON.parse(data);
             let project = dataManager.getProject(task.ProjectId);
             project.Tasks.push(task);
+            return task;
+        },
+        task: {
+            priority: {
+                increase: function (task) {
+                    return swipeTasksPriority(task, { increase: {} });
+                },
+                decrease: function (task) {
+                    return swipeTasksPriority(task, { decrease: {} });
+                }
+            },
+            getIndex: function (task) {
+                let project = dataManager.getProject(task.ProjectId);
+                return project.Tasks.indexOf(task);
+            }
         }
     };
     return exports;
@@ -111,6 +161,16 @@ let ajaxController = (function () {
             add: function (projectId, taskName) {
                 let url = "/Tasks/Add";
                 return ajaxPost(url, [projectId, taskName]);
+            },
+            priority: {
+                increase: function (taskId) {
+                    let url = "/Tasks/IncreasePriority";
+                    return ajaxPost(url, [taskId]);
+                },
+                decrease: function (taskId) {
+                    let url = "/Tasks/DecreasePriority";
+                    return ajaxPost(url, [taskId])
+                }
             }
         }
     };
@@ -163,11 +223,11 @@ let eventManager = (function () {
                 //TODO Validation here
                 ajaxController.task.add(project.Id, newTaskName.value)
                     .then(dataManager.saveTaskToCollection)
+                    .then(renderer.renderTask)
                     .then(function () {
                         let task = project.Tasks[project.Tasks.length - 1];
-                        return task;
+                        eventManager.attachTaskEvents(task);
                     })
-                    .then(renderer.renderTask);
                 newTaskName.value = "";
             }
         });
@@ -247,6 +307,32 @@ let eventManager = (function () {
         });
     }
 
+    function changePriority(task) {
+        let priorityUpBtn = task.element.querySelector('.priorityUp');
+        priorityUpBtn.addEventListener('click', function (event) {
+            let taskIndex = dataManager.task.getIndex(task);
+            if (taskIndex) {
+                ajaxController.task.priority.increase(task.Id);
+                renderer.moveEl.up(task);
+                dataManager.task.priority.increase(task);
+            }
+            event.preventDefault();
+            event.stopImmediatePropagation();
+        });
+
+        let priorityDownBtn = task.element.querySelector('.priorityDown');
+        priorityDownBtn.addEventListener('click', function (event) {
+            let lastTaskIndex = dataManager.getProject(task.ProjectId).Tasks.length - 1;
+            let taskIndex = dataManager.task.getIndex(task);
+            if (taskIndex < lastTaskIndex) {
+                ajaxController.task.priority.decrease(task.Id);
+                renderer.moveEl.down(task);
+                dataManager.task.priority.decrease(task);
+            }
+            event.preventDefault();
+            event.stopImmediatePropagation();
+        });
+    }
 
     let exports = {
         attachProjectEvents: function (project) {
@@ -257,19 +343,23 @@ let eventManager = (function () {
         attachEvents: function (projects) {
             for (let i = 0; i < projects.length; i++) {
                 eventManager.attachProjectEvents(projects[i]);
-                eventManager.attachTaskEvents(projects[i]);
+                eventManager.attachTasksEvents(projects[i]);
             }
         },
         attachProjectTemplateEvents: function (project) {
             projectTemplate(project);
         },
-        attachTaskEvents: function (project) {
+        attachTasksEvents: function (project) {
             for (let i = 0; i < project.Tasks.length; i++) {
                 let task = project.Tasks[i]
-                deleteTask(task);
-                editTask(task);
-                changeStatus(task);
+                eventManager.attachTaskEvents(task);
             }
+        },
+        attachTaskEvents: function (task) {
+            deleteTask(task);
+            editTask(task);
+            changeStatus(task);
+            changePriority(task);
         }
     };
     return exports;
@@ -290,6 +380,10 @@ let renderer = (function () {
         for (let i = 0; i < project.Tasks.length; i++) {
             renderer.renderTask(project.Tasks[i]);
         }
+    }
+
+    function insertAfter(referenceNode, newNode) {
+        referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
     }
 
     let exports = {
@@ -314,7 +408,7 @@ let renderer = (function () {
             return project;
         },
         renderTask: function (task) {
-            let project =dataManager.getProject(task.ProjectId);
+            let project = dataManager.getProject(task.ProjectId);
             let tasksContainer = project.element.querySelector('.taskList');
             if (!tasksContainer) {
                 //Create ul for the tsks if project doesn't have any tasks yet
@@ -331,6 +425,7 @@ let renderer = (function () {
             let tasks = project.element.querySelectorAll('.task');
 
             task.element = tasks[tasks.length - 1];
+            return task;
         },
         createProject: function () {
             //TODO create increment New TODO List(1), then New TODO List(2)
@@ -354,6 +449,22 @@ let renderer = (function () {
         },
         removeElFromPage: function (el) {
             el.remove();
+        },
+        moveEl: {
+            up: function (task) {
+                let taskIndex = dataManager.task.getIndex(task);
+                let project = dataManager.getProject(task.ProjectId);
+                let prev = project.Tasks[taskIndex - 1];
+                let parent = task.element.parentNode;
+                parent.insertBefore(task.element, prev.element);
+            },
+            down: function (task) {
+                let taskIndex = dataManager.task.getIndex(task);
+                let project = dataManager.getProject(task.ProjectId);
+                let next = project.Tasks[taskIndex + 1];
+
+                insertAfter(next.element, task.element);
+            }
         }
     };
     return exports;
