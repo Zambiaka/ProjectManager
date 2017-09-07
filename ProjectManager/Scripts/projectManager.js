@@ -1,6 +1,7 @@
 ﻿document.addEventListener('DOMContentLoaded', function (event) {
     console.log('DOMContentLoaded');
-    loginMode.on();
+    usersController.loginMode.on();
+    eventManager.attachLoginFormEvents();
 
 
     //renderer.projectSection = document.getElementById('projectsSection');
@@ -21,19 +22,40 @@ function addProject() {
 
 let projects = [];
 
-let loginMode = (function () {
-    let exports= {
-        on: function () {
-            let loginForm = document.getElementById("loginForm");
-            let content = document.getElementById("content");
-            loginForm.style.display = "block";
-            content.style.display = "none";
+let usersController = (function () {
+    let exports = {
+        loginMode: {
+            on: function () {
+                let loginForm = document.getElementById("loginForm");
+                let content = document.getElementById("content");
+                renderer.element.show(loginForm);
+                renderer.element.hide(content);
+            },
+            off: function () {
+                let loginForm = document.getElementById("loginForm");
+                let content = document.getElementById("content");
+                renderer.element.show(content);
+                renderer.element.hide(loginForm);
+            }
         },
-        off: function () {
-            let loginForm = document.getElementById("loginForm");
-            let content = document.getElementById("content");
-            content.style.display = "block";
-            loginForm.style.display = "none";
+        registerMode: {
+            on: function () {
+                let loginButtons = document.querySelector('.loginButtons');
+                let registerButtons = document.querySelector('.registerButtons');
+                let userNameInput = document.getElementById("name");
+                renderer.element.show(registerButtons);
+                renderer.element.hide(loginButtons);
+                renderer.element.show(userNameInput);
+
+            },
+            off: function () {
+                let loginButtons = document.querySelector('.loginButtons');
+                let registerButtons = document.querySelector('.registerButtons');
+                let userNameInput = document.getElementById("name");
+                renderer.element.hide(registerButtons);
+                renderer.element.show(loginButtons);
+                renderer.element.hide(userNameInput);
+            }
         }
     }
     return exports;
@@ -200,7 +222,33 @@ let ajaxController = (function () {
 
 let eventManager = (function () {
 
-    function editName(element, id, onEnter) {
+    //Login events
+
+    function loginEvents() {
+        let loginBtn = document.getElementById('loginBtn');
+        loginBtn.addEventListener('click', function () {
+
+        });
+
+        let registerBtn = document.getElementById('registrBtn');
+        registerBtn.addEventListener('click', function () {
+            usersController.registerMode.on();
+        });
+
+        let submitRegistr = document.getElementById('submit');
+        submitRegistr.addEventListener('click', function () {
+
+        });
+
+        let cancelBtn = document.getElementById('cancel');
+        cancelBtn.addEventListener('click', function () {
+            usersController.registerMode.off();
+        });
+
+
+    }
+
+    function _editName(element, id, onEnter) {
         let input = element.querySelector('input');
         $(input).off();
         let oldName = input.value;
@@ -218,7 +266,6 @@ let eventManager = (function () {
             }
         });
     }
-
 
     //Project events
     function editProject(project) {
@@ -311,7 +358,7 @@ let eventManager = (function () {
             ajaxController.task.edit(taskId, newName);
         }
 
-        editName(task.element, task.Id, onEnter);
+        _editName(task.element, task.Id, onEnter);
 
         let editTaskBtn = task.element.querySelector('.editTaskBtn');
         editTaskBtn.addEventListener('click', function () {
@@ -355,6 +402,7 @@ let eventManager = (function () {
     }
 
     let exports = {
+        attachLoginFormEvents: loginEvents,
         attachProjectEvents: function (project) {
             editProject(project);
             deleteProject(project);
@@ -484,6 +532,14 @@ let renderer = (function () {
                 let next = project.Tasks[taskIndex + 1];
 
                 insertAfter(next.element, task.element);
+            }
+        },
+        element: {
+            show: function (element) {
+                element.style.display = "block";
+            },
+            hide: function (element) {
+                element.style.display = "none";
             }
         }
     };

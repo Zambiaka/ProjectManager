@@ -25,6 +25,45 @@ input {
     width: 100%;
 }
 
+
+/*Login form*/
+#loginForm{
+    margin:50px auto;
+    display:block;
+    width:250px;
+}
+
+.btn-group{
+    width:250px;
+    margin-top:2px;
+}
+
+.btn-group button{
+    width:50%;
+
+}
+
+
+.registerButtons{
+    display:none;
+}
+
+#loginForm button {
+    color: white;
+}
+
+ #loginForm input{
+    border: 1px #333333 solid;
+    margin-top:2px;
+    height:30px;
+    padding:10px;
+    border-radius:4px;
+}
+
+#name{
+    display:none;
+}
+
 #content{
     display:none;
     height:100%;
