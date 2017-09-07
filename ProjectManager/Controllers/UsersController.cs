@@ -1,4 +1,5 @@
 ﻿using ProjectManager.Helpers;
+using ProjectManager.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,23 +13,31 @@ namespace ProjectManager.Controllers
         private ProjectManagerContext db = new ProjectManagerContext();
 
         [HttpPost]
-        public JsonResult Register(object[] data)
+        public JsonResult Registration(object[] data)
         {
             string login = data[0].ToString();
             string name = data[2].ToString();
+            bool userExists = false;
 
-            var user = db.Users.Where(u => u.Login == login).ToList().First();
+            if (db.Users.Count() > 0)
+            {
+                userExists = db.Users.Where(u => u.Login == login).ToList().Count>0;
+            }
 
-            if (user == null)
+            if (!userExists)
             {
                 var hash = SecurePasswordHasher.Hash(data[1].ToString());
-                db.Users.Add(new Models.User { Hash = hash, Login = login, Name = name });
+                var newUser = new Models.User { Hash = hash, Login = login, Name = name };
+                db.Users.Add(newUser);
                 db.SaveChanges();
-                return Json("success");
+                List<string> result = new List<string>();
+                result.Add("Account created");
+                result.Add(newUser.Id.ToString());
+                return Json(result);
             }
             else
             {
-                return Json("exists");
+                return Json("Login already exists");
             }
         }
 
@@ -36,15 +45,17 @@ namespace ProjectManager.Controllers
         public JsonResult Login(object[] data)
         {
             string login = data[0].ToString();
-            var user = db.Users.Where(u => u.Login == login).ToList().First();
-            if (user != null)
+            if (db.Users.Count() > 0)
             {
-                var result = SecurePasswordHasher.Verify(data[1].ToString(), user.Hash);
-                if (result == true)
+                var user = db.Users.Where(u => u.Login == login).ToList().First();
+                if (user != null)
                 {
-                    return Json("success");
+                    var result = SecurePasswordHasher.Verify(data[1].ToString(), user.Hash);
+                    if (result == true)
+                    {
+                        return Json("loginSuccessful");
+                    }
                 }
-                return Json("invalid");
             }
             return Json("notFound");
         }

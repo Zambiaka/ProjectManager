@@ -20,6 +20,14 @@ function addProject() {
     eventManager.attachProjectTemplateEvents(projectTemplate);
 }
 
+//let statuses = new WeakMap([
+//    "loginSuccessful": "You are logged in.",
+//    "notFound": "Login or password is invalid",
+//    "alreadyExists": "Login already exists",
+//    "registrationSuccessful": "Account created"
+//    ]
+//);
+
 let projects = [];
 
 let usersController = (function () {
@@ -172,7 +180,7 @@ let ajaxController = (function () {
                 return ajaxPost(url, [login, password]);
             },
             register: function (login, password, name) {
-                let url = "/Users/Register";
+                let url = "/Users/Registration";
                 return ajaxPost(url, [login, password, name]);
             }
         },
@@ -234,10 +242,27 @@ let eventManager = (function () {
 
     //Login events
 
+    function clearInputs(){
+        let loginInput = document.getElementById('login');
+        let passwordInput = document.getElementById('password');
+        let nameInput = document.getElementById('name');
+
+        loginInput.value = passwordInput.value = nameInput.value = '';
+    }
+
     function loginEvents() {
         let loginBtn = document.getElementById('loginBtn');
         loginBtn.addEventListener('click', function () {
-            renderer.showNotification('Good', "success");
+            let loginInput = document.getElementById('login');
+            let passwordInput = document.getElementById('password');
+            if (!loginInput.value || !passwordInput.value) {
+                renderer.showNotification("Login or password fields can't be empty");
+                return;
+            }
+            ajaxController.user.login(loginInput.value, passwordInput.value).then(function (data) {
+                renderer.showNotification(data, "success");
+                clearInputs();
+            });
         });
 
         let registerBtn = document.getElementById('registrBtn');
@@ -247,15 +272,25 @@ let eventManager = (function () {
 
         let submitRegistr = document.getElementById('submit');
         submitRegistr.addEventListener('click', function () {
+            let loginInput = document.getElementById('login');
+            let passwordInput = document.getElementById('password');
+            let nameInput = document.getElementById('name');
 
+            if (!loginInput.value || !passwordInput.value || !nameInput.value) {
+                renderer.showNotification("Fields can't be empty");
+                return;
+            }
+            ajaxController.user.register(loginInput.value, passwordInput.value, nameInput.value).then(function (data) {
+                renderer.showNotification(data, "success");
+                clearInputs();
+            });
         });
 
         let cancelBtn = document.getElementById('cancel');
         cancelBtn.addEventListener('click', function () {
             usersController.registerMode.off();
+            clearInputs();
         });
-
-
     }
 
     function _editName(element, id, onEnter) {
