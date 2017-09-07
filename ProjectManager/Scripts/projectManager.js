@@ -1,11 +1,16 @@
 ﻿document.addEventListener('DOMContentLoaded', function (event) {
     console.log('DOMContentLoaded');
-    if (!userId) {
-        usersController.loginMode.on();
-        eventManager.attachLoginFormEvents();
-    } else {
-        initalizeData();
-    }
+    ajaxController.user.get().then(
+        function (data) {
+            userId = JSON.parse(data);
+            if (!userId) {
+                usersController.loginMode.on();
+                eventManager.attachLoginFormEvents();
+            } else {
+                usersController.loginMode.off();
+                initalizeData();
+            }
+        });
 });
 
 function addProject() {
@@ -17,12 +22,6 @@ let statuses = new Map();
 statuses.set(0, "Login or password is invalid");
 statuses.set(1000, "Login already exists");
 
-//[
-//    "loginSuccessful": "You are logged in.",
-//    "notFound": "Login or password is invalid",
-//    "alreadyExists": "Login already exists",
-//    "registrationSuccessful": "Account created"
-//]
 
 
 let projects = [];
@@ -185,6 +184,10 @@ let ajaxController = (function () {
 
     let exports = {
         user: {
+            get: function () {
+                let url = "/Users/UserId";
+                return ajaxPost(url);
+            },
             login: function (login, password) {
                 let url = "/Users/Login";
                 return ajaxPost(url, [login, password]);
@@ -487,6 +490,7 @@ let eventManager = (function () {
                 eventManager.attachProjectEvents(projects[i]);
                 eventManager.attachTasksEvents(projects[i]);
             }
+            eventManager.attachCreateProjecrtBtnEvent();
         },
         attachProjectTemplateEvents: function (project) {
             projectTemplate(project);

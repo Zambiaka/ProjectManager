@@ -157,6 +157,7 @@
     <Compile Include="Models\User.cs" />
     <Compile Include="ProjectManagerContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UserStore.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\web.config" />
