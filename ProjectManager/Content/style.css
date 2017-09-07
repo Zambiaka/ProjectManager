@@ -33,12 +33,12 @@ input {
     width:250px;
 }
 
-.btn-group{
+ .btn-group{
     width:250px;
     margin-top:2px;
 }
 
-.btn-group button{
+#loginForm button{
     width:50%;
 }
 

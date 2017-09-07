@@ -30,14 +30,12 @@ namespace ProjectManager.Controllers
                 var newUser = new Models.User { Hash = hash, Login = login, Name = name };
                 db.Users.Add(newUser);
                 db.SaveChanges();
-                List<string> result = new List<string>();
-                result.Add("Account created");
-                result.Add(newUser.Id.ToString());
-                return Json(result);
+       
+                return Json(newUser.Id);
             }
             else
             {
-                return Json("Login already exists");
+                return Json(1000);
             }
         }
 
@@ -46,18 +44,19 @@ namespace ProjectManager.Controllers
         {
             string login = data[0].ToString();
             if (db.Users.Count() > 0)
-            {
-                var user = db.Users.Where(u => u.Login == login).ToList().First();
-                if (user != null)
+            {          
+                var users = db.Users.Where(u => u.Login == login).ToList();
+               
+                if (users.Count>0)
                 {
-                    var result = SecurePasswordHasher.Verify(data[1].ToString(), user.Hash);
-                    if (result == true)
+                    var result = SecurePasswordHasher.Verify(data[1].ToString(), users.First().Hash);
+                    if (result)
                     {
-                        return Json("loginSuccessful");
+                        return Json(users.First().Id);
                     }
                 }
             }
-            return Json("notFound");
+            return Json(0);
         }
     }
 }

@@ -1,18 +1,11 @@
 ﻿document.addEventListener('DOMContentLoaded', function (event) {
     console.log('DOMContentLoaded');
-    usersController.loginMode.on();
-    eventManager.attachLoginFormEvents();
-
-
-    //renderer.projectSection = document.getElementById('projectsSection');
-    //ajaxController.initalization
-    //    .getData()
-    //    .then(dataManager.saveData)
-    //    .then(renderer.renderData)
-    //    .then(eventManager.attachEvents);
-
-    //let addProjectButton = document.getElementById("addProject");
-    //addProjectButton.addEventListener('click', addProject);
+    if (!userId) {
+        usersController.loginMode.on();
+        eventManager.attachLoginFormEvents();
+    } else {
+        initalizeData();
+    }
 });
 
 function addProject() {
@@ -20,15 +13,32 @@ function addProject() {
     eventManager.attachProjectTemplateEvents(projectTemplate);
 }
 
-//let statuses = new WeakMap([
+let statuses = new Map();
+statuses.set(0, "Login or password is invalid");
+statuses.set(1000, "Login already exists");
+
+//[
 //    "loginSuccessful": "You are logged in.",
 //    "notFound": "Login or password is invalid",
 //    "alreadyExists": "Login already exists",
 //    "registrationSuccessful": "Account created"
-//    ]
-//);
+//]
+
 
 let projects = [];
+let userId = 0;
+
+
+function initalizeData() {
+    if (userId) {
+        ajaxController.initalization
+            .getData(userId)
+            .then(dataManager.saveData)
+            .then(renderer.renderData)
+            .then(eventManager.attachEvents);
+    }
+}
+
 
 let usersController = (function () {
     let exports = {
@@ -185,10 +195,9 @@ let ajaxController = (function () {
             }
         },
         initalization: {
-            getData: function () {
-                let userId = [1]
+            getData: function (userId) {
                 let url = "/Projects/GetProjects";
-                return ajaxPost(url, userId);
+                return ajaxPost(url, [userId]);
             }
         },
         project: {
@@ -240,9 +249,14 @@ let ajaxController = (function () {
 
 let eventManager = (function () {
 
+    function createProjectBtn() {
+        let addProjectButton = document.getElementById("addProject");
+        addProjectButton.addEventListener('click', addProject);
+    }
+
     //Login events
 
-    function clearInputs(){
+    function clearInputs() {
         let loginInput = document.getElementById('login');
         let passwordInput = document.getElementById('password');
         let nameInput = document.getElementById('name');
@@ -260,9 +274,17 @@ let eventManager = (function () {
                 return;
             }
             ajaxController.user.login(loginInput.value, passwordInput.value).then(function (data) {
-                renderer.showNotification(data, "success");
+                let respondCode = JSON.parse(data);
+                if (respondCode) {
+                    renderer.showNotification('You are logged in', "success");
+                    userId = respondCode;
+                    usersController.loginMode.off();
+                    initalizeData();
+                } else {
+                    renderer.showNotification(statuses.get(respondCode));
+                }
                 clearInputs();
-            });
+            }).then;
         });
 
         let registerBtn = document.getElementById('registrBtn');
@@ -281,7 +303,16 @@ let eventManager = (function () {
                 return;
             }
             ajaxController.user.register(loginInput.value, passwordInput.value, nameInput.value).then(function (data) {
-                renderer.showNotification(data, "success");
+                let respondCode = JSON.parse(data);
+                if (respondCode === 1000) {
+                    renderer.showNotification(statuses.get(respondCode));
+                }
+                else {
+                    renderer.showNotification("Account created. You are logged in", "success");
+                    let userId = respondCode;
+                    usersController.loginMode.off();
+                    eventManager.attachCreateProjecrtBtnEvent();
+                }
                 clearInputs();
             });
         });
@@ -354,8 +385,6 @@ let eventManager = (function () {
             const escKey = 27;
             if (e.keyCode === enterKey) {
                 renderer.nameEditMode.disable(projectTemplate.element);
-                //TODO
-                let userId = 1;
                 ajaxController.project.add(input.value, userId)
                     .then(dataManager.saveProject)
                     .then(
@@ -473,7 +502,8 @@ let eventManager = (function () {
             editTask(task);
             changeStatus(task);
             changePriority(task);
-        }
+        },
+        attachCreateProjecrtBtnEvent: createProjectBtn
     };
     return exports;
 })();
@@ -500,7 +530,7 @@ let renderer = (function () {
     }
 
     let exports = {
-        projectSection: null,
+        projectSection: document.getElementById('projectsSection'),
         renderData: function (projects) {
             for (let i = 0; i < projects.length; i++) {
                 renderer.renderProject(projects[i]);
@@ -515,9 +545,10 @@ let renderer = (function () {
             let projectName = content.querySelector('.projectName');
             projectName.value = project.Name;
             document.importNode(content);
-            renderer.projectSection.appendChild(content.cloneNode(true));
+            let section = document.getElementById('projectsSection');
+            section.appendChild(content.cloneNode(true));
 
-            project.element = renderer.projectSection.children[renderer.projectSection.children.length - 1];
+            project.element = section.children[section.children.length - 1];
             return project;
         },
         renderTask: function (task) {
@@ -591,7 +622,7 @@ let renderer = (function () {
             let alert = document.querySelector('.alert');
             let messageContainer = document.getElementById('alertText');
             messageContainer.innerText = message;
-            if (alertType==='success') {
+            if (alertType === 'success') {
                 alert.classList.remove('alert-danger');
                 alert.classList.add('alert-success');
             } else {
@@ -599,7 +630,7 @@ let renderer = (function () {
                 alert.classList.add('alert-danger');
             }
             renderer.element.show(alert);
-            setTimeout(function () { renderer.element.hide(alert); }, 2000);
+            setTimeout(function () { renderer.element.hide(alert); }, 3000);
         }
     };
     return exports;
