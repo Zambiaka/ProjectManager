@@ -7,7 +7,7 @@ using System.Web.Mvc;
 
 namespace ProjectManager.Controllers
 {
-    public class UserController : Controller
+    public class UsersController : Controller
     {
         private ProjectManagerContext db = new ProjectManagerContext();
 
@@ -15,13 +15,13 @@ namespace ProjectManager.Controllers
         public JsonResult Register(object[] data)
         {
             string login = data[0].ToString();
-            string name = data[1].ToString();
+            string name = data[2].ToString();
 
             var user = db.Users.Where(u => u.Login == login).ToList().First();
 
             if (user == null)
             {
-                var hash = SecurePasswordHasher.Hash(data[2].ToString());
+                var hash = SecurePasswordHasher.Hash(data[1].ToString());
                 db.Users.Add(new Models.User { Hash = hash, Login = login, Name = name });
                 db.SaveChanges();
                 return Json("success");

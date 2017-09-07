@@ -40,11 +40,9 @@ input {
 
 .btn-group button{
     width:50%;
-
 }
 
-
-.registerButtons{
+.registerButtons, .alert{
     display:none;
 }
 

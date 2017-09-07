@@ -166,6 +166,16 @@ let ajaxController = (function () {
     }
 
     let exports = {
+        user: {
+            login: function (login, password) {
+                let url = "/Users/Login";
+                return ajaxPost(url, [login, password]);
+            },
+            register: function (login, password, name) {
+                let url = "/Users/Register";
+                return ajaxPost(url, [login, password, name]);
+            }
+        },
         initalization: {
             getData: function () {
                 let userId = [1]
@@ -227,7 +237,7 @@ let eventManager = (function () {
     function loginEvents() {
         let loginBtn = document.getElementById('loginBtn');
         loginBtn.addEventListener('click', function () {
-
+            renderer.showNotification('Good', "success");
         });
 
         let registerBtn = document.getElementById('registrBtn');
@@ -541,6 +551,20 @@ let renderer = (function () {
             hide: function (element) {
                 element.style.display = "none";
             }
+        },
+        showNotification: function (message, alertType) {
+            let alert = document.querySelector('.alert');
+            let messageContainer = document.getElementById('alertText');
+            messageContainer.innerText = message;
+            if (alertType==='success') {
+                alert.classList.remove('alert-danger');
+                alert.classList.add('alert-success');
+            } else {
+                alert.classList.remove('alert-success');
+                alert.classList.add('alert-danger');
+            }
+            renderer.element.show(alert);
+            setTimeout(function () { renderer.element.hide(alert); }, 2000);
         }
     };
     return exports;
