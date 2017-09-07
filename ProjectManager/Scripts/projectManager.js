@@ -328,9 +328,17 @@ let eventManager = (function () {
     }
 
     function _editName(element, id, onEnter) {
-        let input = element.querySelector('input');
+        let input = element.querySelector('input[type="text"]');
         $(input).off();
         let oldName = input.value;
+
+        let escapeEdit = function () {
+            input.value = oldName;
+            renderer.nameEditMode.disable(element);
+        }
+
+        $(window).on('click', escapeEdit);
+   
         $(input).on('keydown', function (e) {
             const enterKey = 13;
             const escKey = 27;
@@ -340,8 +348,7 @@ let eventManager = (function () {
                     onEnter(id, input.value);
                 }
             } else if (e.keyCode === escKey) {
-                input.value = oldName;
-                renderer.nameEditMode.disable(element);
+                escapeEdit();
             }
         });
     }
@@ -352,11 +359,11 @@ let eventManager = (function () {
             ajaxController.project.edit(projectId, newName);
         }
 
-        editName(project.element, project.Id, onEnter);
+        _editName(project.element, project.Id, onEnter);
 
         let editProjectBtn = project.element.querySelector('.editProjectBtn');
         editProjectBtn.addEventListener('click', function () {
-            renderer.nameEditMode.enable(project.element)
+            renderer.nameEditMode.enable(project.element);
         });
     }
 
